@@ -1,0 +1,237 @@
+<?php 
+//error_reporting(E_ALL);
+//ini_set('display_errors', 1);
+
+date_default_timezone_set('America/Chicago');
+
+/**
+ * ValidClass class
+ * 
+ * @author: Caro Manel
+ * @date: 2014
+ * 
+ */
+ 
+class ValidClass 
+{	
+	/**
+	 * CheckEmail()
+	 * 
+	 * Check for a valid email
+	 * 
+	 * @param string
+	 * @return bool
+	 */
+	public static function CheckEmail($email)
+	{
+		return preg_match("/^([a-z0-9])(([-a-z0-9._])*([a-z0-9]))*\@([a-z0-9])(([a-z0-9-])*([a-z0-9]))+(\.([a-z0-9])([-a-z0-9_-])?([a-z0-9])+)+$/i", $email);
+	}
+	
+	/**
+	 * CheckUrl()
+	 * 
+	 * Check for a valid URL
+	 * 
+	 * @param string $string
+	 * @return bool
+	 */
+	public static function CheckUrl($url)
+	{
+		return preg_match("/^(http|https|ftp):\/\/([A-Z0-9][A-Z0-9_-]*(?:\.[A-Z0-9][A-Z0-9_-]*)+):?(\d+)?\/?/i", $url); 
+	}
+	
+	/**
+	 * CheckInteger()
+	 * 
+	 * Check for an integer value
+	 * 
+	 * @param string $integer
+	 * @param bool $retClean
+	 * @param int $max
+	 * @param int $min
+	 * @return bool
+	 * @return string $retClean
+	 */
+	public static function CheckInteger($integer, $min=0, $max=null, $retClean=false) 
+	{
+		$clean = str_replace(',','', $integer);
+		if(preg_match("/^\-?\+?[0-9e1-9]+$/",$clean)) 
+		{
+			if(!self::CheckBetween($clean, $min, $max)) return false;
+			
+			if ($retClean) return $clean;
+			
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * CheckBetween()
+	 * 
+	 * check if a number is between two others
+	 * 
+	 * @param int $integer
+	 * @param int $max
+	 * @param int $min
+	 * @return bool
+	 */
+	public static function CheckBetween($integer, $min=0, $max=null)
+	{
+		if(is_numeric($min) && $integer < $min) return false;
+		if(is_numeric($max) && $integer > $max) return false;
+		return true;
+	}
+	
+	/**
+	 * CheckFloat()
+	 * 
+	 * Check for a float number
+	 * 
+	 * @param string $string
+	 * @return bool
+	 */
+	public static function CheckFloat($string)
+	{
+		$clean = str_replace(',','', $string);
+		return ($clean == strval( floatval($clean) ) ) ? true : false;
+	}
+	
+	/**
+	 * CheckAlpha()
+	 * 
+	 * check for allphanumeric value
+	 * 
+	 * @param string $string
+	 * @return void
+	 */
+	public static function CheckAlpha($string)
+	{
+		return preg_match("/^[a-zA-Z]+$/", $string);	
+	}
+	
+	/**
+	 * CheckAlphaNumeric()
+	 * 
+	 * Check for alpha-numeric values
+	 * 
+	 * @param string $string
+	 * @return void
+	 */
+	public static function CheckAlphaNumeric($string)
+	{
+		return preg_match("/^[0-9a-zA-Z]+$/", $string);	
+	}
+	
+	
+	/**
+	 * CheckLength()
+	 * 
+	 * Check length of an string
+	 * 
+	 * @param string $stirng
+	 * @param int $max
+	 * @param int $min
+	 * @return bool
+	 */
+	public static function CheckLength($string, $min=0, $max=null)
+	{
+		if(!self::CheckBetween(strlen($string), $min, $max)) return false;
+		return true;
+	}
+	
+	/**
+     * CheckIfDate()
+     * 
+     * Check for a valid date
+     *
+	 * @param string $string
+     * @param string $date_format
+     * @return bool
+     */
+    public static function CheckIfDate($string, $date_format = 'Y-m-d')
+    {
+		return DateTime::createFromFormat($date_format, $string) !== FALSE;
+    }
+    
+    /**
+     * CheckAge()
+     * 
+     * Check if a given $age is lower than current year
+     * 
+     * @param string $string
+     * @param int $age
+     * @return bool
+     */
+    public static function CheckAge($string, $minAge)
+    {
+    	if(!self::CheckBetween($string, '1910', '2090')) return false;
+    	if ( self::CheckInteger($string, 0)) return  ( $minAge < date_create($string)->diff(date_create('today'))->y );
+    	
+    	return false;
+    }
+	
+	/**
+     * CheckPhone()
+     * 
+     * Check for a valid phone number
+     *  
+     * @param string $phone
+     * @param bool $retClean
+     * @return bool
+     * @return string
+     */
+    public static function CheckPhone($string, $retClean = false)
+    {
+    	$string = preg_replace('/\D/', '', $string);
+ 
+    	if (!self::CheckLength($string, 10,10) ) return false;
+    
+        return ($retClean) ? $string : true;
+    }
+    
+    /**
+     * CheckForWord()
+     * 
+     * Search for a word in text
+     *  
+     * @param string $string
+     * @param string $text
+     * @param string $highlightColor
+     * @return bool
+     * @return string
+     */
+    public static function CheckForWord($string, $text, $highlight_color = false)
+    {
+		if (stripos($text, $string) !== false) {
+			if ( $highlight_color ) { 
+				$text = preg_replace("/\b(" . $string . ")\b/i", '<span style="background: ' . $highlight_color . '">\1</span>', $text);
+				return $text;
+			}
+			
+			return true;
+		}
+		return false;
+    }
+}
+
+//------------------------------------------------------------------------------------ 
+// Example: How to use class 
+//------------------------------------------------------------------------------------
+
+/*
+var_dump(ValidClass::CheckEmail('caromanel@hotmail.com')); echo '<br/>';
+var_dump(ValidClass::CheckUrl('http://caromanel.net')); echo '<br/>';
+var_dump(ValidClass::CheckInteger('1,000', '500','2000', true)); echo '<br/>';
+var_dump(ValidClass::CheckInteger('100','0','80', false)); echo '<br/>';
+var_dump(ValidClass::CheckFloat('1000.23')); echo '<br/>';
+var_dump(ValidClass::CheckAlpha('Carolina')); echo '<br/>';
+var_dump(ValidClass::CheckAlphaNumeric('caromanel14')); echo '<br/>';
+var_dump(ValidClass::CheckLength('Caro Manel',1,10)); echo '<br/>';
+var_dump(ValidClass::CheckIfDate('10-10-2014','m-d-Y')); echo '<br/>';
+var_dump(ValidClass::CheckAge(2000,18)); echo '<br/>';
+var_dump(ValidClass::CheckPhone('630.345.0881')); echo '<br/>';
+var_dump(ValidClass::CheckPhone('630.345.0881', true)); echo '<br/>';
+echo ValidClass::CheckForWord('Caro','Caro Manel' ,'#5fc9f6');
+*/
+?>
